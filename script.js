@@ -57,7 +57,7 @@ function checkAuth(requiredRole) {
     if (currentUser.role !== requiredRole) {
         alert('Access Denied!');
         logout();
-    }
+    } 
 }
 
 function initializeUsers() {
