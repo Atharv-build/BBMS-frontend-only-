@@ -1,5 +1,20 @@
-// This variable will hold the details of the currently logged-in user.
 let currentUser = null;
+
+// Hamburger menu toggle for admin access
+function toggleHamburgerMenu() {
+    const menu = document.getElementById('hamburger-menu');
+    if (menu) {
+        menu.classList.toggle('open');
+    }
+}
+// Close hamburger menu when clicking outside
+document.addEventListener('click', function (e) {
+    const menu = document.getElementById('hamburger-menu');
+    const btn = document.getElementById('hamburger-btn');
+    if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.remove('open');
+    }
+});
 
 // This object holds all the sample data for the application.
 const mockData = {
@@ -16,9 +31,9 @@ const mockData = {
         { id: 4, name: 'Om Shinde', email: 'om.s@example.com', group: 'AB+', phone: '555-987-6543', lastDonation: '2025-09-01', totalDonations: 12 },
     ],
     patients: [
-         { id: 1, name: 'Shubham Hole', email: 'shubham@email.com', group: 'A-', phone: '876-543-2109' },
-         { id: 2, name: 'Yshodeep Khatate', email: 'yshodeep.k@example.com', group: 'O+', phone: '765-432-1098' },
-         { id: 3, name: 'Mangesh Darekar', email: 'mangesh.d@example.com', group: 'B-', phone: '654-321-0987' },
+        { id: 1, name: 'Shubham Hole', email: 'shubham@email.com', group: 'A-', phone: '876-543-2109' },
+        { id: 2, name: 'Yshodeep Khatate', email: 'yshodeep.k@example.com', group: 'O+', phone: '765-432-1098' },
+        { id: 3, name: 'Mangesh Darekar', email: 'mangesh.d@example.com', group: 'B-', phone: '654-321-0987' },
     ],
     requests: [
         { id: 1, patient: 'Shubham Hole', group: 'A-', units: 2, date: '2025-09-25', status: 'pending' },
@@ -54,18 +69,24 @@ function checkAuth(requiredRole) {
         return;
     }
     currentUser = JSON.parse(userStr);
-    if (currentUser.role !== requiredRole) {
+    // Admin portal is restricted to admin accounts only
+    // All other portals (donor, patient, user) are accessible by any non-admin account
+    if (requiredRole === 'admin' && currentUser.role !== 'admin') {
         alert('Access Denied!');
         logout();
-    } 
+    } else if (requiredRole !== 'admin' && currentUser.role === 'admin') {
+        alert('Access Denied!');
+        logout();
+    }
 }
 
 function initializeUsers() {
     if (!localStorage.getItem('users')) {
         const defaultUsers = [
             { email: 'admin@lifecare.com', password: 'password', role: 'admin', name: 'Admin', bloodBankName: 'Life Care Central' },
-            { email: 'atharv@email.com', password: 'password', role: 'donor', name: 'Atharv Gaikwad', bloodGroup: 'A+'},
-            { email: 'shubham@email.com', password: 'password', role: 'patient', name: 'Shubham Hole', bloodGroup: 'A-'},
+            { email: 'atharv@email.com', password: 'password', role: 'donor', name: 'Atharv Gaikwad', bloodGroup: 'A+' },
+            { email: 'shubham@email.com', password: 'password', role: 'patient', name: 'Shubham Hole', bloodGroup: 'A-' },
+            { email: 'user@lifecare.com', password: 'password', role: 'user', name: 'Demo User', bloodGroup: 'O+', phone: '555-000-1234' },
         ];
         localStorage.setItem('users', JSON.stringify(defaultUsers));
     }
@@ -75,16 +96,19 @@ function handleLogin(role, form) {
     const email = form.querySelector('input[type="email"]').value;
     const password = form.querySelector('input[type="password"]').value;
     const errorEl = form.closest('.form-box').querySelector('.form-error');
-    if(errorEl) errorEl.textContent = '';
+    if (errorEl) errorEl.textContent = '';
 
     const users = JSON.parse(localStorage.getItem('users')) || [];
-    const user = users.find(u => u.email === email && u.role === role);
+    // Admin login only matches admin accounts; all other logins match any non-admin account
+    const user = role === 'admin'
+        ? users.find(u => u.email === email && u.role === 'admin')
+        : users.find(u => u.email === email && u.role !== 'admin');
 
     if (user && user.password === password) {
         sessionStorage.setItem('currentUser', JSON.stringify(user));
         window.location.href = `${role}_dashboard.html`;
     } else {
-        if(errorEl) errorEl.textContent = 'Invalid email or password.';
+        if (errorEl) errorEl.textContent = 'Invalid email or password.';
     }
 }
 
@@ -102,6 +126,13 @@ function handleRegister(role, form) {
         newUser.bloodBankName = inputs[2].value;
         password = inputs[3].value;
         confirmPassword = inputs[4].value;
+    } else if (role === 'user') {
+        newUser.name = inputs[0].value;
+        newUser.email = inputs[1].value;
+        newUser.bloodGroup = inputs[2].value;
+        newUser.phone = inputs[3].value;
+        password = inputs[4].value;
+        confirmPassword = inputs[5].value;
     } else { // For donor and patient
         newUser.name = inputs[0].value;
         newUser.email = inputs[1].value;
@@ -117,21 +148,102 @@ function handleRegister(role, form) {
     newUser.password = password;
 
     let users = JSON.parse(localStorage.getItem('users')) || [];
-    if (users.find(u => u.email === newUser.email)) {
+    if (users.find(u => u.email === newUser.email && u.role === newUser.role)) {
         if (errorEl) errorEl.textContent = 'An account with this email already exists.';
         return;
     }
 
     users.push(newUser);
     localStorage.setItem('users', JSON.stringify(users));
-    
+
     alert('Registration Successful! You can now log in.');
     toggleRegister(false); // Switch back to login view
 }
 
 function logout() {
+    const user = JSON.parse(sessionStorage.getItem('currentUser'));
     sessionStorage.removeItem('currentUser');
-    window.location.href = 'index.html';
+    // If user role, go back to user login; otherwise go home
+    if (user && user.role === 'user') {
+        window.location.href = 'user_login.html';
+    } else {
+        window.location.href = 'index.html';
+    }
+}
+
+// Navigate from user dashboard to a specific portal
+function navigateToPortal(portalType) {
+    // The user is already authenticated; just redirect
+    window.location.href = `${portalType}_dashboard.html`;
+}
+
+// Render the user dashboard hub page
+function renderUserDashboard() {
+    if (!currentUser) return;
+
+    // Welcome message
+    document.getElementById('user-welcome-name').textContent = `Welcome, ${currentUser.name}!`;
+
+    // Profile details
+    const profileEl = document.getElementById('user-profile-details');
+    if (profileEl) {
+        profileEl.innerHTML = `
+            <div class="user-profile-item">
+                <span class="user-profile-label">Full Name</span>
+                <span class="user-profile-value">${currentUser.name}</span>
+            </div>
+            <div class="user-profile-item">
+                <span class="user-profile-label">Email</span>
+                <span class="user-profile-value">${currentUser.email}</span>
+            </div>
+            <div class="user-profile-item">
+                <span class="user-profile-label">Blood Group</span>
+                <span class="user-profile-value"><span class="status-badge status-available">${currentUser.bloodGroup || 'N/A'}</span></span>
+            </div>
+            <div class="user-profile-item">
+                <span class="user-profile-label">Phone</span>
+                <span class="user-profile-value">${currentUser.phone || 'Not provided'}</span>
+            </div>
+            <div class="user-profile-item">
+                <span class="user-profile-label">Account Type</span>
+                <span class="user-profile-value">User (Donor + Patient)</span>
+            </div>
+        `;
+    }
+
+    // Quick stats
+    const statsEl = document.getElementById('user-quick-stats');
+    const myDonations = mockData.donationHistory.filter(h => h.donor === currentUser.email);
+    const myRequests = mockData.requests.filter(r => r.patient === currentUser.name);
+    const myAppointments = mockData.appointments.filter(a => a.donor === currentUser.email);
+    const upcomingCamps = mockData.campaigns.filter(c => c.status === 'Upcoming');
+
+    if (statsEl) {
+        statsEl.innerHTML = `
+            <div class="card kpi-card"><div class="card-body"><h3>My Donations</h3><p>${myDonations.length}</p></div></div>
+            <div class="card kpi-card"><div class="card-body"><h3>My Requests</h3><p>${myRequests.length}</p></div></div>
+            <div class="card kpi-card"><div class="card-body"><h3>Appointments</h3><p>${myAppointments.length}</p></div></div>
+            <div class="card kpi-card"><div class="card-body"><h3>Upcoming Camps</h3><p>${upcomingCamps.length}</p></div></div>
+        `;
+    }
+
+    // Recent activity - combine donations and requests
+    const activityEl = document.getElementById('user-recent-activity');
+    if (activityEl) {
+        let activities = [];
+        myDonations.forEach(d => activities.push({ date: d.date, type: 'Donation', detail: d.location, status: 'completed' }));
+        myRequests.forEach(r => activities.push({ date: r.date, type: 'Blood Request', detail: `${r.units} units (${r.group})`, status: r.status }));
+        myAppointments.forEach(a => activities.push({ date: a.date, type: 'Appointment', detail: a.location, status: a.status.toLowerCase() }));
+        activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const activityHeaders = [
+            { key: 'date', label: 'Date' },
+            { key: 'type', label: 'Type' },
+            { key: 'detail', label: 'Details' },
+            { key: 'status', label: 'Status', render: (row) => `<span class="status-badge status-${row.status}">${row.status}</span>` }
+        ];
+        activityEl.innerHTML = createTable(activities, activityHeaders);
+    }
 }
 
 // --- LOGIN PAGE UI FUNCTIONS ---
@@ -139,7 +251,7 @@ function logout() {
 function toggleRegister(showRegister) {
     const loginForm = document.querySelector('.login-form');
     const registerForm = document.querySelector('.register-form');
-    
+
     if (showRegister) {
         loginForm.style.display = 'none';
         registerForm.style.display = 'block';
@@ -196,7 +308,7 @@ function renderAdminDashboard() {
     const totalUnits = mockData.inventory.reduce((sum, item) => sum + item.units, 0);
     const pendingRequests = mockData.requests.filter(r => r.status === 'pending').length;
     document.getElementById('admin-kpi-cards').innerHTML = `<div class="card kpi-card"><div class="card-body"><h3>Total Units</h3><p>${totalUnits}</p></div></div><div class="card kpi-card"><div class="card-body"><h3>Pending Requests</h3><p>${pendingRequests}</p></div></div><div class="card kpi-card"><div class="card-body"><h3>Registered Donors</h3><p>${mockData.donors.length}</p></div></div><div class="card kpi-card"><div class="card-body"><h3>Campaigns</h3><p>${mockData.campaigns.length}</p></div></div>`;
-    
+
     // Main Dashboard Tables
     const inventoryHeaders = [{ key: 'group', label: 'Blood Group' }, { key: 'units', label: 'Units' }, { key: 'status', label: 'Status', render: (row) => `<span class="status-badge status-${row.status}">${row.status}</span>` }];
     document.getElementById('dashboard-inventory-table').innerHTML = createTable(mockData.inventory, inventoryHeaders);
@@ -205,11 +317,11 @@ function renderAdminDashboard() {
 
     // Inventory Page Table
     document.getElementById('admin-inventory-table').innerHTML = createTable(mockData.inventory, inventoryHeaders);
-    
+
     // Requests Page Table
     const requestHeaders = [{ key: 'patient', label: 'Patient' }, { key: 'group', label: 'Blood Group' }, { key: 'units', label: 'Units' }, { key: 'date', label: 'Date' }, { key: 'status', label: 'Status', render: (row) => `<span class="status-badge status-${row.status}">${row.status}</span>` }, { key: 'actions', label: 'Actions', render: (row) => row.status === 'pending' ? `<div style="display:flex; gap:0.5rem;"><button class="action-btn approve" onclick="handleRequestAction(${row.id}, 'approved')">Approve</button><button class="action-btn reject" onclick="handleRequestAction(${row.id}, 'rejected')">Reject</button></div>` : 'N/A' }];
     document.getElementById('admin-requests-table').innerHTML = createTable(mockData.requests, requestHeaders);
-    
+
     // Management Page Tables
     const patientInfoHeaders = [{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'group', label: 'Blood Group' }, { key: 'phone', label: 'Contact' }];
     document.getElementById('admin-patients-info-table').innerHTML = createTable(mockData.patients, patientInfoHeaders);
@@ -217,7 +329,7 @@ function renderAdminDashboard() {
     document.getElementById('admin-donors-info-table').innerHTML = createTable(mockData.donors, donorInfoHeaders);
     const donorHistoryHeaders = [{ key: 'name', label: 'Donor Name' }, { key: 'group', label: 'Blood Group' }, { key: 'lastDonation', label: 'Last Donation' }, { key: 'totalDonations', label: 'Total Donations' }];
     document.getElementById('admin-donors-history-table').innerHTML = createTable(mockData.donors, donorHistoryHeaders);
-    
+
     // Campaigns Page Table
     const campaignHeaders = [{ key: 'name', label: 'Name' }, { key: 'location', label: 'Location' }, { key: 'date', label: 'Date' }, { key: 'status', label: 'Status', render: (row) => `<span class="status-badge status-${row.status.toLowerCase()}">${row.status}</span>` }];
     document.getElementById('admin-campaigns-table').innerHTML = createTable(mockData.campaigns, campaignHeaders);
@@ -230,10 +342,10 @@ function renderAdminDashboard() {
             donorName: donor ? donor.name : 'Unknown'
         };
     });
-    const donationLogHeaders = [{ key: 'donorName', label: 'Donor Name'}, { key: 'date', label: 'Date'}, { key: 'location', label: 'Location'}, { key: 'units', label: 'Units Donated'}];
+    const donationLogHeaders = [{ key: 'donorName', label: 'Donor Name' }, { key: 'date', label: 'Date' }, { key: 'location', label: 'Location' }, { key: 'units', label: 'Units Donated' }];
     document.getElementById('report-donation-log-table').innerHTML = createTable(donationLogData, donationLogHeaders);
 
-    const campaignSummaryHeaders = [{ key: 'name', label: 'Campaign Name'}, { key: 'date', label: 'Date'}, { key: 'status', label: 'Status'}, { key: 'unitsCollected', label: 'Units Collected'}];
+    const campaignSummaryHeaders = [{ key: 'name', label: 'Campaign Name' }, { key: 'date', label: 'Date' }, { key: 'status', label: 'Status' }, { key: 'unitsCollected', label: 'Units Collected' }];
     document.getElementById('report-campaign-summary-table').innerHTML = createTable(mockData.campaigns, campaignSummaryHeaders);
 }
 
@@ -252,9 +364,9 @@ function renderDonorDashboard() {
     const historyHeaders = [{ key: 'date', label: 'Date' }, { key: 'location', label: 'Location' }, { key: 'units', label: 'Units Donated' }];
     const myHistory = mockData.donationHistory.filter(h => h.donor === currentUser.email);
     document.getElementById('donor-history-table').innerHTML = createTable(myHistory, historyHeaders);
-    const campaignHeaders = [{ key: 'name', label: 'Campaign' }, { key: 'location', label: 'Location' }, {key: 'date', label: 'Date'}];
+    const campaignHeaders = [{ key: 'name', label: 'Campaign' }, { key: 'location', label: 'Location' }, { key: 'date', label: 'Date' }];
     document.getElementById('donor-campaigns-table').innerHTML = createTable(mockData.campaigns.filter(c => c.status === 'Upcoming'), campaignHeaders);
-    const appointmentHeaders = [{ key: 'date', label: 'Date' }, { key: 'location', label: 'Location' }, {key: 'status', label: 'Status', render: (row) => `<span class="status-badge status-approved">${row.status}</span>`}];
+    const appointmentHeaders = [{ key: 'date', label: 'Date' }, { key: 'location', label: 'Location' }, { key: 'status', label: 'Status', render: (row) => `<span class="status-badge status-approved">${row.status}</span>` }];
     const myAppointments = mockData.appointments.filter(a => a.donor === currentUser.email);
     document.getElementById('donor-appointments-table').innerHTML = createTable(myAppointments, appointmentHeaders);
 }
@@ -312,7 +424,7 @@ function handleAddDonor(event) {
 
 function handlePatientRequest(event) {
     event.preventDefault();
-    if(!currentUser) return;
+    if (!currentUser) return;
     const form = event.target;
     const newRequest = { id: mockData.requests.length + 1, patient: currentUser.name, group: form.group.value, units: parseInt(form.units.value), date: new Date().toISOString().split('T')[0], status: 'pending' };
     mockData.requests.push(newRequest);
@@ -323,7 +435,7 @@ function handlePatientRequest(event) {
 
 function handleAppointmentSubmit(event) {
     event.preventDefault();
-    if(!currentUser) return;
+    if (!currentUser) return;
     const form = event.target;
     const newAppointment = { id: mockData.appointments.length + 1, date: form.date.value, location: form.location.value, status: 'Confirmed', donor: currentUser.email };
     mockData.appointments.push(newAppointment);
@@ -348,6 +460,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('admin-menu-btn').addEventListener('click', () => {
                 document.getElementById('admin-sidebar').classList.toggle('open');
             });
+        } else if (role === 'user') {
+            renderUserDashboard();
         } else if (role === 'patient') {
             renderPatientDashboard();
         } else if (role === 'donor') {

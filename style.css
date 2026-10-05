@@ -121,6 +121,80 @@ th {
     color: var(--text-light);
 }
 
+/* Logo area with hamburger */
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.hamburger-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dark);
+    transition: background-color 0.2s, border-color 0.2s;
+}
+.hamburger-btn:hover {
+    background-color: #f5f5f5;
+    border-color: var(--text-light);
+}
+
+.hamburger-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    min-width: 220px;
+    padding: 0.5rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
+    z-index: 100;
+}
+.hamburger-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.hamburger-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    transition: background-color 0.15s;
+}
+.hamburger-menu-item:hover {
+    background-color: #FEF2F2;
+    color: var(--primary-color);
+}
+.hamburger-menu-item svg {
+    flex-shrink: 0;
+}
+
+/* Header actions (login buttons) */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
 .footer {
     background-color: #212121;
     color: #a0aec0;
@@ -473,6 +547,127 @@ th {
 }
 .admin-mobile-menu-btn {
     display: none;
+}
+
+/* --- User Dashboard Styles --- */
+.user-welcome-banner {
+    background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 50%, #880E4F 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 24px rgba(211, 47, 47, 0.25);
+    animation: fadeInUp 0.5s ease-out;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.user-welcome-text h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+.user-welcome-text p {
+    font-size: 1rem;
+    opacity: 0.85;
+}
+.user-welcome-icon {
+    opacity: 0.3;
+}
+
+.user-profile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+@media (min-width: 640px) {
+    .user-profile-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.user-profile-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.user-profile-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-light);
+    letter-spacing: 0.05em;
+}
+.user-profile-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.user-portal-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+@media (min-width: 640px) {
+    .user-portal-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.user-portal-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    text-align: center;
+}
+.user-portal-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+}
+.user-portal-donor:hover {
+    border-color: var(--primary-color);
+}
+.user-portal-patient:hover {
+    border-color: #1976D2;
+}
+.user-portal-card-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+.user-portal-donor .user-portal-card-icon {
+    background: #FEF2F2;
+    color: var(--primary-color);
+}
+.user-portal-patient .user-portal-card-icon {
+    background: #E3F2FD;
+    color: #1976D2;
+}
+.user-portal-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.user-portal-card p {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.user-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+@media (min-width: 768px) {
+    .user-stats-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* Responsive styles */
