@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank Worker Portal - Life Care</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body id="worker_dashboard">
+    <div class="worker-layout">
+        <!-- Mobile menu button -->
+        <button id="worker-menu-btn" class="worker-mobile-menu-btn">
+            <svg style="width:1.5rem; height:1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+
+        <!-- Sidebar Navigation -->
+        <aside id="worker-sidebar" class="worker-sidebar">
+            <div class="worker-sidebar-header">
+                <svg style="width:1.75rem; height:1.75rem; color:var(--primary-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                <span>Staff Portal</span>
+            </div>
+            <div class="worker-sidebar-user">
+                <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Active Worker</div>
+                <div id="worker-user-name" style="font-weight: 600; color: white; margin-top: 0.25rem;">Staff Member</div>
+                <div id="worker-user-designation" style="font-size: 0.85rem; color: #cbd5e1;">Blood Bank Staff</div>
+            </div>
+            <nav>
+                <a href="#" class="worker-nav-link active" onclick="showWorkerSection('worker-dashboard-main')">
+                    <svg style="width:1.25rem; height:1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    Dashboard
+                </a>
+                <a href="#" class="worker-nav-link" onclick="showWorkerSection('worker-inventory')">
+                    <svg style="width:1.25rem; height:1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    Blood Records & Stock
+                </a>
+                <a href="#" class="worker-nav-link" onclick="showWorkerSection('worker-requests')">
+                    <svg style="width:1.25rem; height:1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Blood Requests
+                </a>
+                <a href="#" class="worker-nav-link" onclick="showWorkerSection('worker-campaigns')">
+                    <svg style="width:1.25rem; height:1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Campaigns Management
+                </a>
+                <a href="#" class="worker-nav-link" onclick="showWorkerSection('worker-management')">
+                    <svg style="width:1.25rem; height:1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    Worker Management
+                </a>
+            </nav>
+            <div class="worker-sidebar-footer">
+                <a href="#" class="worker-nav-link" onclick="logout()">
+                    <svg style="width:1.25rem; height:1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="worker-main-content">
+            <!-- Section 1: Dashboard Overview -->
+            <section id="worker-dashboard-main" class="worker-section active">
+                <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div>
+                        <h1 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem;" id="worker-welcome-title">Staff Dashboard</h1>
+                        <p style="color: #94a3b8; font-size: 0.95rem;">Manage blood inventory, process patient requests, organize donation camps, and register workers.</p>
+                    </div>
+                    <div style="background: rgba(211, 47, 47, 0.15); border: 1px solid rgba(211, 47, 47, 0.3); padding: 0.5rem 1rem; border-radius: 8px; text-align: right;">
+                        <span style="display:block; font-size: 0.75rem; text-transform: uppercase; color: #fca5a5; font-weight: 600;">Status</span>
+                        <span style="font-size: 0.95rem; font-weight: 700; color: #ef4444;">Active On Duty</span>
+                    </div>
+                </div>
+
+                <div id="worker-kpi-cards" class="kpi-grid"></div>
+
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Quick Blood Inventory Status</span>
+                        <button class="btn btn-primary" style="padding: 6px 14px; font-size: 0.85rem;" onclick="showWorkerSection('worker-inventory')">Update Stock</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table id="worker-dashboard-inventory-table"></table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Blood Records & Stock -->
+            <section id="worker-inventory" class="worker-section">
+                <h1 class="section-title" style="text-align: left;">Blood Records & Stock Management</h1>
+
+                <!-- Update Blood Units Form -->
+                <div class="card">
+                    <div class="card-header">Record Blood / Update Units</div>
+                    <div class="card-body">
+                        <form id="worker-stock-form" onsubmit="handleWorkerStockUpdate(event)" class="grid-form">
+                            <div>
+                                <label style="display:block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Blood Group</label>
+                                <select name="group" class="form-input" required>
+                                    <option value="">Select Blood Group</option>
+                                    <option value="A+">A+</option><option value="A-">A-</option>
+                                    <option value="B+">B+</option><option value="B-">B-</option>
+                                    <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                                    <option value="O+">O+</option><option value="O-">O-</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Action Type</label>
+                                <select name="actionType" class="form-input" required>
+                                    <option value="add">Add Units (Donation / Restock)</option>
+                                    <option value="deduct">Deduct Units (Dispatch / Discard)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Units Count</label>
+                                <input name="units" type="number" min="1" placeholder="Number of Units" class="form-input" required>
+                            </div>
+                            <div style="grid-column: 1 / -1; display: flex; gap: 1rem; align-items: flex-end;">
+                                <div style="flex: 1;">
+                                    <label style="display:block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Reason / Reference Notes</label>
+                                    <input name="notes" type="text" placeholder="e.g. Received from Camp, Transferred to ICU, Expired bag" class="form-input">
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="white-space: nowrap;">Update Blood Stock</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Current Stock Table -->
+                <div class="card">
+                    <div class="card-header">Current Blood Inventory Status</div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table id="worker-inventory-table"></table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Blood Requests -->
+            <section id="worker-requests" class="worker-section">
+                <h1 class="section-title" style="text-align: left;">Blood Requests Approval & Management</h1>
+                <div class="card">
+                    <div class="card-header">Patient Blood Requests</div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table id="worker-requests-table"></table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Campaigns Management -->
+            <section id="worker-campaigns" class="worker-section">
+                <h1 class="section-title" style="text-align: left;">Campaigns Management</h1>
+
+                <!-- Add New Campaign Card -->
+                <div class="card">
+                    <div class="card-header">Schedule New Blood Donation Campaign</div>
+                    <div class="card-body">
+                        <form id="worker-add-campaign-form" onsubmit="handleWorkerAddCampaign(event)" class="grid-form">
+                            <input name="name" type="text" placeholder="Campaign / Camp Name" class="form-input" required>
+                            <input name="location" type="text" placeholder="Location / Venue" class="form-input" required>
+                            <input name="date" type="date" class="form-input" required>
+                            <button type="submit" class="btn btn-primary">Schedule Campaign</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Upcoming Campaigns Card -->
+                <div class="card">
+                    <div class="card-header">Upcoming Donation Campaigns</div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table id="worker-upcoming-campaigns-table"></table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Completed Campaigns History Card -->
+                <div class="card">
+                    <div class="card-header">Campaign History (Completed)</div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table id="worker-completed-campaigns-table"></table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 5: Worker Management -->
+            <section id="worker-management" class="worker-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div>
+                        <h1 class="section-title" style="text-align: left; margin: 0;">Worker Management</h1>
+                        <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 0.25rem;">Register and manage authorized blood bank staff accounts.</p>
+                    </div>
+                </div>
+
+                <!-- Add New Worker Form -->
+                <div class="card">
+                    <div class="card-header">Register New Blood Bank Worker</div>
+                    <div class="card-body">
+                        <form id="worker-add-worker-form" onsubmit="handleAddWorker(event)" class="grid-form">
+                            <input name="name" type="text" placeholder="Full Name" class="form-input" required>
+                            <input name="email" type="email" placeholder="Staff Email Address" class="form-input" required>
+                            <input name="password" type="text" placeholder="Initial Password" class="form-input" required>
+                            <select name="designation" class="form-input" required>
+                                <option value="">Select Designation / Role</option>
+                                <option value="Blood Bank Officer">Blood Bank Officer</option>
+                                <option value="Lab Technician">Lab Technician</option>
+                                <option value="Phlebotomist">Phlebotomist</option>
+                                <option value="Medical Officer">Medical Officer</option>
+                                <option value="Inventory Supervisor">Inventory Supervisor</option>
+                            </select>
+                            <input name="phone" type="tel" placeholder="Contact Phone Number" class="form-input" required>
+                            <button type="submit" class="btn btn-primary">Register Worker</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Worker Directory Table -->
+                <div class="card">
+                    <div class="card-header">Blood Bank Staff Directory</div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table id="worker-directory-table"></table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

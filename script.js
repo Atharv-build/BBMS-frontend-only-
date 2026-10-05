@@ -37,7 +37,7 @@ const mockData = {
     ],
     requests: [
         { id: 1, patient: 'Shubham Hole', group: 'A-', units: 2, date: '2025-09-25', status: 'pending' },
-        { id: 2, patient: 'Yshodeep Khatate', group: 'O+', units: 4, date: '2025-09-24', status: 'approved' },
+        { id: 2, patient: 'Yshodeep Khatate', group: 'O+', units: 4, date: '2025-09-24', status: 'approved', approvalDate: '2025-09-24' },
         { id: 3, patient: 'Mangesh Darekar', group: 'B-', units: 1, date: '2025-09-22', status: 'rejected' },
     ],
     campaigns: [
@@ -69,40 +69,90 @@ function checkAuth(requiredRole) {
         return;
     }
     currentUser = JSON.parse(userStr);
-    // Admin portal is restricted to admin accounts only
-    // All other portals (donor, patient, user) are accessible by any non-admin account
+    // Role based restrictions
     if (requiredRole === 'admin' && currentUser.role !== 'admin') {
         alert('Access Denied!');
         logout();
-    } else if (requiredRole !== 'admin' && currentUser.role === 'admin') {
+    } else if (requiredRole === 'worker' && currentUser.role !== 'worker' && currentUser.role !== 'admin') {
+        alert('Access Denied!');
+        logout();
+    } else if (requiredRole !== 'admin' && requiredRole !== 'worker' && (currentUser.role === 'admin' || currentUser.role === 'worker')) {
         alert('Access Denied!');
         logout();
     }
 }
 
 function initializeUsers() {
-    if (!localStorage.getItem('users')) {
-        const defaultUsers = [
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    if (users.length === 0) {
+        users = [
             { email: 'admin@lifecare.com', password: 'password', role: 'admin', name: 'Admin', bloodBankName: 'Life Care Central' },
-            { email: 'atharv@email.com', password: 'password', role: 'donor', name: 'Atharv Gaikwad', bloodGroup: 'A+' },
-            { email: 'shubham@email.com', password: 'password', role: 'patient', name: 'Shubham Hole', bloodGroup: 'A-' },
+            { email: 'worker@lifecare.com', password: 'password', role: 'worker', name: 'Ramesh Patil', designation: 'Blood Bank Officer', phone: '998-877-6655' },
+            { email: 'atharv@email.com', password: 'password', role: 'donor', name: 'Atharv Gaikwad', bloodGroup: 'A+', phone: '123-456-7890' },
+            { email: 'shubham@email.com', password: 'password', role: 'patient', name: 'Shubham Hole', bloodGroup: 'A-', phone: '876-543-2109' },
             { email: 'user@lifecare.com', password: 'password', role: 'user', name: 'Demo User', bloodGroup: 'O+', phone: '555-000-1234' },
         ];
-        localStorage.setItem('users', JSON.stringify(defaultUsers));
     }
+
+    // Ensure default worker exists
+    if (!users.some(u => u.role === 'worker')) {
+        users.push({
+            email: 'worker@lifecare.com',
+            password: 'password',
+            role: 'worker',
+            name: 'Ramesh Patil',
+            designation: 'Blood Bank Officer',
+            phone: '998-877-6655'
+        });
+    }
+
+    // Sync mockData donors into users list if missing
+    mockData.donors.forEach(donor => {
+        if (!users.some(u => u.email === donor.email)) {
+            users.push({
+                email: donor.email,
+                password: 'password',
+                role: 'donor',
+                name: donor.name,
+                bloodGroup: donor.group,
+                phone: donor.phone
+            });
+        }
+    });
+
+    // Sync mockData patients into users list if missing
+    mockData.patients.forEach(patient => {
+        if (!users.some(u => u.email === patient.email)) {
+            users.push({
+                email: patient.email,
+                password: 'password',
+                role: 'patient',
+                name: patient.name,
+                bloodGroup: patient.group,
+                phone: patient.phone
+            });
+        }
+    });
+
+    localStorage.setItem('users', JSON.stringify(users));
 }
 
 function handleLogin(role, form) {
+    initializeUsers();
     const email = form.querySelector('input[type="email"]').value;
     const password = form.querySelector('input[type="password"]').value;
     const errorEl = form.closest('.form-box').querySelector('.form-error');
     if (errorEl) errorEl.textContent = '';
 
     const users = JSON.parse(localStorage.getItem('users')) || [];
-    // Admin login only matches admin accounts; all other logins match any non-admin account
-    const user = role === 'admin'
-        ? users.find(u => u.email === email && u.role === 'admin')
-        : users.find(u => u.email === email && u.role !== 'admin');
+    let user = null;
+    if (role === 'admin') {
+        user = users.find(u => u.email === email && u.role === 'admin');
+    } else if (role === 'worker') {
+        user = users.find(u => u.email === email && (u.role === 'worker' || u.role === 'admin'));
+    } else {
+        user = users.find(u => u.email === email && u.role !== 'admin' && u.role !== 'worker');
+    }
 
     if (user && user.password === password) {
         sessionStorage.setItem('currentUser', JSON.stringify(user));
@@ -163,9 +213,10 @@ function handleRegister(role, form) {
 function logout() {
     const user = JSON.parse(sessionStorage.getItem('currentUser'));
     sessionStorage.removeItem('currentUser');
-    // If user role, go back to user login; otherwise go home
     if (user && user.role === 'user') {
         window.location.href = 'user_login.html';
+    } else if (user && user.role === 'worker') {
+        window.location.href = 'worker_login.html';
     } else {
         window.location.href = 'index.html';
     }
@@ -330,11 +381,57 @@ function renderAdminDashboard() {
     const donorHistoryHeaders = [{ key: 'name', label: 'Donor Name' }, { key: 'group', label: 'Blood Group' }, { key: 'lastDonation', label: 'Last Donation' }, { key: 'totalDonations', label: 'Total Donations' }];
     document.getElementById('admin-donors-history-table').innerHTML = createTable(mockData.donors, donorHistoryHeaders);
 
+    // User Management Table
+    initializeUsers();
+    const usersList = JSON.parse(localStorage.getItem('users')) || [];
+    const usersHeaders = [
+        { key: 'name', label: 'Name' },
+        { key: 'email', label: 'Email' },
+        { key: 'password', label: 'Password' },
+        { key: 'role', label: 'Role', render: (row) => `<span class="status-badge status-upcoming" style="text-transform:capitalize;">${row.role}</span>` },
+        { key: 'bloodGroup', label: 'Blood Group', render: (row) => row.bloodGroup || 'N/A' },
+        { key: 'phone', label: 'Contact', render: (row) => row.phone || 'N/A' },
+        { key: 'bloodBankName', label: 'Blood Bank', render: (row) => row.bloodBankName || 'N/A' }
+    ];
+    const usersTableEl = document.getElementById('admin-users-table');
+    if (usersTableEl) {
+        usersTableEl.innerHTML = createTable(usersList, usersHeaders);
+    }
+
     // Campaigns Page Table
     const campaignHeaders = [{ key: 'name', label: 'Name' }, { key: 'location', label: 'Location' }, { key: 'date', label: 'Date' }, { key: 'status', label: 'Status', render: (row) => `<span class="status-badge status-${row.status.toLowerCase()}">${row.status}</span>` }];
     document.getElementById('admin-campaigns-table').innerHTML = createTable(mockData.campaigns, campaignHeaders);
 
     // Reports Page Tables
+    const approvedRequests = mockData.requests.filter(r => r.status === 'approved');
+    const requestApprovalData = approvedRequests.map(req => {
+        const patient = mockData.patients.find(p => p.name === req.patient);
+        return {
+            patientName: req.patient,
+            email: patient ? patient.email : 'N/A',
+            group: req.group,
+            units: req.units,
+            phone: patient ? patient.phone : 'N/A',
+            requestDate: req.date,
+            approvalDate: req.approvalDate || req.date,
+            status: req.status
+        };
+    });
+    const requestApprovalHeaders = [
+        { key: 'patientName', label: 'Patient Name' },
+        { key: 'email', label: 'Email' },
+        { key: 'group', label: 'Blood Group' },
+        { key: 'units', label: 'Units Approved' },
+        { key: 'phone', label: 'Contact' },
+        { key: 'requestDate', label: 'Request Date' },
+        { key: 'approvalDate', label: 'Approval Date' },
+        { key: 'status', label: 'Status', render: (row) => `<span class="status-badge status-${row.status}">${row.status}</span>` }
+    ];
+    const reportApprovalEl = document.getElementById('report-request-approval-table');
+    if (reportApprovalEl) {
+        reportApprovalEl.innerHTML = createTable(requestApprovalData, requestApprovalHeaders);
+    }
+
     const donationLogData = mockData.donationHistory.map(log => {
         const donor = mockData.donors.find(d => d.email === log.donor);
         return {
@@ -375,7 +472,13 @@ function renderDonorDashboard() {
 
 function handleRequestAction(requestId, newStatus) {
     const request = mockData.requests.find(r => r.id === requestId);
-    if (request) { request.status = newStatus; renderAdminDashboard(); }
+    if (request) {
+        request.status = newStatus;
+        if (newStatus === 'approved') {
+            request.approvalDate = new Date().toISOString().split('T')[0];
+        }
+        renderAdminDashboard();
+    }
 }
 
 function handleAddCampaign(event) {
@@ -417,9 +520,61 @@ function handleAddDonor(event) {
         donor: form.email.value
     });
 
+    // Also register user in users list so they appear in User Management
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    if (!users.some(u => u.email === newDonor.email)) {
+        users.push({
+            email: newDonor.email,
+            password: 'password',
+            role: 'donor',
+            name: newDonor.name,
+            bloodGroup: newDonor.group,
+            phone: newDonor.phone
+        });
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+
     form.reset();
     renderAdminDashboard(); // Re-render all admin tables to reflect the new data.
     alert('New donor added successfully!');
+}
+
+function handleAddPatient(event) {
+    event.preventDefault();
+    const form = event.target;
+
+    // Check if a patient with the same email already exists to prevent duplicates.
+    if (mockData.patients.some(p => p.email === form.email.value)) {
+        alert('A patient with this email already exists.');
+        return;
+    }
+
+    const newPatient = {
+        id: mockData.patients.length + 1,
+        name: form.name.value,
+        email: form.email.value,
+        group: form.group.value,
+        phone: form.phone.value
+    };
+    mockData.patients.push(newPatient);
+
+    // Optionally register user in users list so they can log in if needed
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    if (!users.some(u => u.email === newPatient.email)) {
+        users.push({
+            email: newPatient.email,
+            password: 'password',
+            role: 'patient',
+            name: newPatient.name,
+            bloodGroup: newPatient.group,
+            phone: newPatient.phone
+        });
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+
+    form.reset();
+    renderAdminDashboard(); // Re-render all admin tables to reflect the new data.
+    alert('New patient added successfully!');
 }
 
 function handlePatientRequest(event) {
@@ -444,6 +599,287 @@ function handleAppointmentSubmit(event) {
     alert('Your donation appointment has been confirmed.');
 }
 
+function exportUsersToExcel() {
+    initializeUsers();
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    
+    let csvContent = "\uFEFF"; // UTF-8 BOM for Excel encoding
+    csvContent += "Full Name,Email Address,Password,Role,Blood Group,Phone Number,Blood Bank Name\n";
+    
+    users.forEach(user => {
+        const name = `"${(user.name || '').replace(/"/g, '""')}"`;
+        const email = `"${(user.email || '').replace(/"/g, '""')}"`;
+        const password = `"${(user.password || '').replace(/"/g, '""')}"`;
+        const role = `"${(user.role || '').replace(/"/g, '""')}"`;
+        const bloodGroup = `"${(user.bloodGroup || 'N/A').replace(/"/g, '""')}"`;
+        const phone = `"${(user.phone || 'N/A').replace(/"/g, '""')}"`;
+        const bloodBankName = `"${(user.bloodBankName || 'N/A').replace(/"/g, '""')}"`;
+        
+        csvContent += `${name},${email},${password},${role},${bloodGroup},${phone},${bloodBankName}\n`;
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Users_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// --- WORKER DASHBOARD FUNCTIONS ---
+
+function showWorkerSection(sectionId) {
+    document.querySelectorAll('.worker-section').forEach(section => section.classList.remove('active'));
+    const target = document.getElementById(sectionId);
+    if (target) target.classList.add('active');
+    document.querySelectorAll('.worker-nav-link').forEach(nav => nav.classList.remove('active'));
+    const activeNav = document.querySelector(`.worker-nav-link[onclick="showWorkerSection('${sectionId}')"]`);
+    if (activeNav) activeNav.classList.add('active');
+    const sidebar = document.getElementById('worker-sidebar');
+    if (window.innerWidth < 768 && sidebar) sidebar.classList.remove('open');
+}
+
+function renderWorkerDashboard() {
+    if (!currentUser) return;
+
+    // Worker profile display in sidebar & banner
+    const workerNameEl = document.getElementById('worker-user-name');
+    if (workerNameEl) workerNameEl.textContent = currentUser.name || 'Staff Member';
+    const workerDesigEl = document.getElementById('worker-user-designation');
+    if (workerDesigEl) workerDesigEl.textContent = currentUser.designation || 'Blood Bank Staff';
+    const workerTitleEl = document.getElementById('worker-welcome-title');
+    if (workerTitleEl) workerTitleEl.textContent = `Welcome, ${currentUser.name}!`;
+
+    // Users & Stats
+    initializeUsers();
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const workers = users.filter(u => u.role === 'worker');
+    const totalUnits = mockData.inventory.reduce((sum, item) => sum + item.units, 0);
+    const pendingRequests = mockData.requests.filter(r => r.status === 'pending').length;
+    const upcomingCamps = mockData.campaigns.filter(c => c.status === 'Upcoming').length;
+
+    // KPI Cards
+    const kpiContainer = document.getElementById('worker-kpi-cards');
+    if (kpiContainer) {
+        kpiContainer.innerHTML = `
+            <div class="card kpi-card"><div class="card-body"><h3>Total Blood Units</h3><p>${totalUnits}</p></div></div>
+            <div class="card kpi-card"><div class="card-body"><h3>Pending Requests</h3><p style="color:#EF6C00;">${pendingRequests}</p></div></div>
+            <div class="card kpi-card"><div class="card-body"><h3>Upcoming Camps</h3><p style="color:#1976D2;">${upcomingCamps}</p></div></div>
+            <div class="card kpi-card"><div class="card-body"><h3>Staff Workers</h3><p>${workers.length}</p></div></div>
+        `;
+    }
+
+    // Inventory Tables
+    const inventoryHeaders = [
+        { key: 'group', label: 'Blood Group' },
+        { key: 'units', label: 'Available Units' },
+        { key: 'status', label: 'Status', render: (row) => `<span class="status-badge status-${row.status}">${row.status}</span>` },
+        { key: 'actions', label: 'Quick Adjust', render: (row) => `
+            <div style="display:flex; gap:0.4rem;">
+                <button class="action-btn" onclick="handleWorkerQuickStock('${row.group}', 1)" title="Add 1 unit" style="font-weight:700; color:var(--success-color);">+1</button>
+                <button class="action-btn" onclick="handleWorkerQuickStock('${row.group}', -1)" title="Deduct 1 unit" style="font-weight:700; color:var(--primary-color);">-1</button>
+            </div>
+        ` }
+    ];
+    const dashboardInvEl = document.getElementById('worker-dashboard-inventory-table');
+    if (dashboardInvEl) dashboardInvEl.innerHTML = createTable(mockData.inventory, inventoryHeaders);
+    const workerInvEl = document.getElementById('worker-inventory-table');
+    if (workerInvEl) workerInvEl.innerHTML = createTable(mockData.inventory, inventoryHeaders);
+
+    // Requests Table
+    const requestHeaders = [
+        { key: 'patient', label: 'Patient Name' },
+        { key: 'group', label: 'Blood Group' },
+        { key: 'units', label: 'Units' },
+        { key: 'date', label: 'Requested Date' },
+        { key: 'status', label: 'Status', render: (row) => `<span class="status-badge status-${row.status}">${row.status}</span>` },
+        { key: 'actions', label: 'Actions', render: (row) => row.status === 'pending' ? `
+            <div style="display:flex; gap:0.5rem;">
+                <button class="action-btn approve" onclick="handleWorkerRequestAction(${row.id}, 'approved')">Approve</button>
+                <button class="action-btn reject" onclick="handleWorkerRequestAction(${row.id}, 'rejected')">Reject</button>
+            </div>
+        ` : (row.approvalDate ? `<span style="font-size:0.8rem; color:#757575;">Date: ${row.approvalDate}</span>` : 'N/A') }
+    ];
+    const workerRequestsEl = document.getElementById('worker-requests-table');
+    if (workerRequestsEl) workerRequestsEl.innerHTML = createTable(mockData.requests, requestHeaders);
+
+    // Upcoming Campaigns Table
+    const upcomingCampaigns = mockData.campaigns.filter(c => c.status === 'Upcoming');
+    const upcomingCampaignHeaders = [
+        { key: 'name', label: 'Campaign Name' },
+        { key: 'location', label: 'Location' },
+        { key: 'date', label: 'Scheduled Date' },
+        { key: 'status', label: 'Status', render: (row) => `<span class="status-badge status-upcoming">${row.status}</span>` },
+        { key: 'actions', label: 'Action', render: (row) => `
+            <button class="action-btn complete" onclick="handleCompleteCampaign(${row.id})">Mark as Completed</button>
+        ` }
+    ];
+    const upcomingCampEl = document.getElementById('worker-upcoming-campaigns-table');
+    if (upcomingCampEl) upcomingCampEl.innerHTML = createTable(upcomingCampaigns, upcomingCampaignHeaders);
+
+    // Completed Campaigns Table
+    const completedCampaigns = mockData.campaigns.filter(c => c.status === 'Completed');
+    const completedCampaignHeaders = [
+        { key: 'name', label: 'Campaign Name' },
+        { key: 'location', label: 'Location' },
+        { key: 'date', label: 'Date Completed' },
+        { key: 'unitsCollected', label: 'Units Collected', render: (row) => `<strong>${row.unitsCollected || 0} units</strong>` },
+        { key: 'status', label: 'Status', render: (row) => `<span class="status-badge status-completed">${row.status}</span>` }
+    ];
+    const completedCampEl = document.getElementById('worker-completed-campaigns-table');
+    if (completedCampEl) completedCampEl.innerHTML = createTable(completedCampaigns, completedCampaignHeaders);
+
+    // Worker Directory Table
+    const workerHeaders = [
+        { key: 'name', label: 'Name' },
+        { key: 'email', label: 'Email' },
+        { key: 'password', label: 'Password' },
+        { key: 'designation', label: 'Designation / Role', render: (row) => `<span class="status-badge status-available">${row.designation || 'Blood Bank Staff'}</span>` },
+        { key: 'phone', label: 'Contact Phone', render: (row) => row.phone || 'N/A' }
+    ];
+    const workerDirEl = document.getElementById('worker-directory-table');
+    if (workerDirEl) workerDirEl.innerHTML = createTable(workers, workerHeaders);
+}
+
+function handleWorkerStockUpdate(event) {
+    event.preventDefault();
+    const form = event.target;
+    const group = form.group.value;
+    const actionType = form.actionType.value;
+    const units = parseInt(form.units.value, 10);
+    const notes = form.notes ? form.notes.value : '';
+
+    const item = mockData.inventory.find(i => i.group === group);
+    if (!item) return;
+
+    if (actionType === 'add') {
+        item.units += units;
+    } else {
+        if (item.units < units) {
+            alert(`Cannot deduct ${units} units. Only ${item.units} units of ${group} are currently in stock.`);
+            return;
+        }
+        item.units -= units;
+    }
+
+    // Recalculate status
+    if (item.units >= 20) item.status = 'available';
+    else if (item.units >= 10) item.status = 'low';
+    else item.status = 'critical';
+
+    form.reset();
+    renderWorkerDashboard();
+    alert(`Blood stock for ${group} updated successfully! Current units: ${item.units}`);
+}
+
+function handleWorkerQuickStock(group, delta) {
+    const item = mockData.inventory.find(i => i.group === group);
+    if (!item) return;
+
+    if (delta < 0 && item.units <= 0) {
+        alert(`No units of ${group} available to deduct.`);
+        return;
+    }
+
+    item.units += delta;
+    if (item.units >= 20) item.status = 'available';
+    else if (item.units >= 10) item.status = 'low';
+    else item.status = 'critical';
+
+    renderWorkerDashboard();
+}
+
+function handleWorkerRequestAction(requestId, status) {
+    const request = mockData.requests.find(r => r.id === requestId);
+    if (!request) return;
+
+    if (status === 'approved') {
+        const item = mockData.inventory.find(i => i.group === request.group);
+        if (item && item.units < request.units) {
+            const proceed = confirm(`Warning: Available stock of ${request.group} is ${item.units} units, but request is for ${request.units} units. Proceed with approval?`);
+            if (!proceed) return;
+        }
+        if (item && item.units >= request.units) {
+            item.units -= request.units;
+            if (item.units >= 20) item.status = 'available';
+            else if (item.units >= 10) item.status = 'low';
+            else item.status = 'critical';
+        }
+        request.status = 'approved';
+        request.approvalDate = new Date().toISOString().split('T')[0];
+        alert(`Request for ${request.patient} (${request.units} units of ${request.group}) approved successfully!`);
+    } else {
+        request.status = 'rejected';
+        alert(`Request for ${request.patient} rejected.`);
+    }
+
+    renderWorkerDashboard();
+}
+
+function handleWorkerAddCampaign(event) {
+    event.preventDefault();
+    const form = event.target;
+    const newCamp = {
+        id: mockData.campaigns.length + 1,
+        name: form.name.value,
+        location: form.location.value,
+        date: form.date.value,
+        status: 'Upcoming',
+        unitsCollected: 0
+    };
+    mockData.campaigns.push(newCamp);
+    form.reset();
+    renderWorkerDashboard();
+    alert(`Campaign "${newCamp.name}" scheduled successfully!`);
+}
+
+function handleCompleteCampaign(campaignId) {
+    const camp = mockData.campaigns.find(c => c.id === campaignId);
+    if (!camp) return;
+
+    const unitsStr = prompt(`Enter total blood units collected during "${camp.name}":`, "35");
+    if (unitsStr === null) return; // User cancelled
+
+    const collectedUnits = parseInt(unitsStr, 10) || 0;
+    camp.status = 'Completed';
+    camp.unitsCollected = collectedUnits;
+
+    renderWorkerDashboard();
+    alert(`Campaign "${camp.name}" marked as Completed with ${collectedUnits} units collected!`);
+}
+
+function handleAddWorker(event) {
+    event.preventDefault();
+    const form = event.target;
+    const name = form.name.value;
+    const email = form.email.value;
+    const password = form.password.value;
+    const designation = form.designation.value;
+    const phone = form.phone.value;
+
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    if (users.some(u => u.email === email)) {
+        alert('A user with this email address already exists.');
+        return;
+    }
+
+    users.push({
+        name,
+        email,
+        password,
+        role: 'worker',
+        designation,
+        phone
+    });
+    localStorage.setItem('users', JSON.stringify(users));
+
+    form.reset();
+    renderWorkerDashboard();
+    alert(`New staff member "${name}" registered successfully! They can now log in using ${email}.`);
+}
+
 // --- EVENT LISTENERS & INITIALIZATION ---
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -452,7 +888,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const isLoginPage = window.location.pathname.includes('_login.html');
 
     if (isDashboard) {
-        const role = document.body.id.split('_')[0]; // e.g., 'admin' from 'admin_dashboard'
+        const role = document.body.id.split('_')[0]; // e.g., 'admin', 'worker'
         checkAuth(role);
         if (role === 'admin') {
             renderAdminDashboard();
@@ -460,6 +896,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('admin-menu-btn').addEventListener('click', () => {
                 document.getElementById('admin-sidebar').classList.toggle('open');
             });
+        } else if (role === 'worker') {
+            renderWorkerDashboard();
+            showWorkerSection('worker-dashboard-main');
+            const workerMenuBtn = document.getElementById('worker-menu-btn');
+            if (workerMenuBtn) {
+                workerMenuBtn.addEventListener('click', () => {
+                    document.getElementById('worker-sidebar').classList.toggle('open');
+                });
+            }
         } else if (role === 'user') {
             renderUserDashboard();
         } else if (role === 'patient') {

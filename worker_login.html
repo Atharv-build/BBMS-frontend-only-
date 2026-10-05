@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank Staff Login - Life Care</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="index.html">Life Care</a>
+                <div class="subtitle">blood bank management system</div>
+            </div>
+            <div>
+                <a href="index.html" class="btn btn-primary">Back to Home</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container" style="max-width: 500px;">
+                <div class="portal-content">
+                    <!-- Blood Bank Worker Login Form (Only login allowed, no public registration) -->
+                    <div class="form-box login-form">
+                        <div class="form-box-header" style="text-align: center; margin-bottom: 2rem;">
+                            <div style="width: 4rem; height: 4rem; background: #FEF2F2; color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                                <svg style="width: 2rem; height: 2rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                            </div>
+                            <h2>Blood Bank Staff Login</h2>
+                            <p style="color: var(--text-light); margin-top: 0.25rem;">Authorized portal for blood bank workers and technicians</p>
+                        </div>
+                        <form onsubmit="event.preventDefault(); handleLogin('worker', this)">
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display:block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-dark);">Staff Email Address</label>
+                                <input type="email" placeholder="e.g. worker@lifecare.com" class="form-input" required>
+                            </div>
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display:block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-dark);">Password</label>
+                                <input type="password" placeholder="Enter your password" class="form-input" required>
+                            </div>
+                            <p class="form-error" id="worker-login-error"></p>
+                            <button type="submit" class="btn btn-primary" style="width:100%; justify-content: center; padding: 0.75rem;">Login to Dashboard</button>
+                        </form>
+                        <div style="margin-top: 1.75rem; padding: 1rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 0.875rem; color: var(--text-light); text-align: center; line-height: 1.5;">
+                            <strong style="color: var(--text-dark); display: block; margin-bottom: 0.25rem;">Staff Access Notice</strong>
+                            Public registration is disabled for this portal. New blood bank workers must be registered internally by an existing staff member.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
