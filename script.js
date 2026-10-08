@@ -16,6 +16,22 @@ document.addEventListener('click', function (e) {
     }
 });
 
+// Portal Switcher toggle (for Admin & Worker dashboards)
+function togglePortalSwitcher() {
+    const menu = document.getElementById('portal-switcher-menu');
+    if (menu) {
+        menu.classList.toggle('open');
+    }
+}
+// Close portal switcher when clicking outside
+document.addEventListener('click', function (e) {
+    const menu = document.getElementById('portal-switcher-menu');
+    const btn = document.getElementById('portal-switcher-btn');
+    if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.remove('open');
+    }
+});
+
 // This object holds all the sample data for the application.
 const mockData = {
     inventory: [
