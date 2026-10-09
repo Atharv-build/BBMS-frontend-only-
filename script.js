@@ -32,6 +32,35 @@ document.addEventListener('click', function (e) {
     }
 });
 
+// Dynamically inject Admin Login & Staff Login into the hamburger menu on every page
+document.addEventListener('DOMContentLoaded', function () {
+    const menu = document.getElementById('hamburger-menu');
+    if (!menu) return;
+
+    // Only add if not already present
+    if (!menu.querySelector('a[href="admin_login.html"]')) {
+        const adminLink = document.createElement('a');
+        adminLink.href = 'admin_login.html';
+        adminLink.className = 'hamburger-menu-item';
+        adminLink.innerHTML = `
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0"/></svg>
+            Admin Login
+        `;
+        menu.appendChild(adminLink);
+    }
+
+    if (!menu.querySelector('a[href="worker_login.html"]')) {
+        const staffLink = document.createElement('a');
+        staffLink.href = 'worker_login.html';
+        staffLink.className = 'hamburger-menu-item';
+        staffLink.innerHTML = `
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            Staff Login
+        `;
+        menu.appendChild(staffLink);
+    }
+});
+
 // This object holds all the sample data for the application.
 const mockData = {
     inventory: [
@@ -41,33 +70,33 @@ const mockData = {
         { group: 'O+', units: 45, status: 'available' }, { group: 'O-', units: 22, status: 'available' },
     ],
     donors: [
-        { id: 1, name: 'Atharv Gaikwad', email: 'atharv@email.com', group: 'A+', phone: '123-456-7890', lastDonation: '2025-07-15', totalDonations: 5 },
-        { id: 2, name: 'Shreyash Shendage', email: 'shreyash.s@example.com', group: 'O-', phone: '987-654-3210', lastDonation: '2025-08-02', totalDonations: 8 },
-        { id: 3, name: 'Dharam Pote', email: 'dharam.p@example.com', group: 'B+', phone: '555-123-4567', lastDonation: '2025-06-20', totalDonations: 3 },
-        { id: 4, name: 'Om Shinde', email: 'om.s@example.com', group: 'AB+', phone: '555-987-6543', lastDonation: '2025-09-01', totalDonations: 12 },
+        { id: 1, name: 'Viraj Dhumal', email: 'viraj@gmail.com', group: 'A+', phone: '123-456-7890', lastDonation: '2025-07-15', totalDonations: 5 },
+        { id: 2, name: 'Pranav Bhagat', email: 'pranav@gmail.com', group: 'O-', phone: '987-654-3210', lastDonation: '2025-08-02', totalDonations: 8 },
+        { id: 3, name: 'Mayur Shinde', email: 'mayur@gmail.com', group: 'B+', phone: '555-123-4567', lastDonation: '2025-06-20', totalDonations: 3 },
+        { id: 4, name: 'Sandesh Bhosale', email: 'sandesh@gmail.com', group: 'AB+', phone: '555-987-6543', lastDonation: '2025-09-01', totalDonations: 12 },
     ],
     patients: [
-        { id: 1, name: 'Shubham Hole', email: 'shubham@email.com', group: 'A-', phone: '876-543-2109' },
-        { id: 2, name: 'Yshodeep Khatate', email: 'yshodeep.k@example.com', group: 'O+', phone: '765-432-1098' },
-        { id: 3, name: 'Mangesh Darekar', email: 'mangesh.d@example.com', group: 'B-', phone: '654-321-0987' },
+        { id: 1, name: 'Shubham Budhe', email: 'shubham@gmail.com', group: 'A-', phone: '876-543-2109' },
+        { id: 2, name: 'Adesh Jadhav', email: 'Adesh@gmail.com', group: 'O+', phone: '765-432-1098' },
+        { id: 3, name: 'Siddesh Shirake', email: 'siddesh@gmail.com', group: 'B-', phone: '654-321-0987' },
     ],
     requests: [
-        { id: 1, patient: 'Shubham Hole', group: 'A-', units: 2, date: '2025-09-25', status: 'pending' },
-        { id: 2, patient: 'Yshodeep Khatate', group: 'O+', units: 4, date: '2025-09-24', status: 'approved', approvalDate: '2025-09-24' },
-        { id: 3, patient: 'Mangesh Darekar', group: 'B-', units: 1, date: '2025-09-22', status: 'rejected' },
+        { id: 1, patient: 'Shubham Budhe', group: 'A-', units: 2, date: '2025-09-25', status: 'pending' },
+        { id: 2, patient: 'Adesh Jadhav', group: 'O+', units: 4, date: '2025-09-24', status: 'approved', approvalDate: '2025-09-24' },
+        { id: 3, patient: 'Siddesh Shirake', group: 'B-', units: 1, date: '2025-09-22', status: 'rejected' },
     ],
     campaigns: [
         { id: 1, name: 'City Hall Blood Drive', location: 'Downtown Plaza', date: '2025-10-15', status: 'Upcoming', unitsCollected: 0 },
         { id: 2, name: 'Community Center Camp', location: 'Greenwood Park', date: '2025-08-10', status: 'Completed', unitsCollected: 52 },
     ],
     appointments: [
-        { id: 1, date: '2025-10-02', location: 'Downtown Plaza', status: 'Confirmed', donor: 'atharv@email.com' },
+        { id: 1, date: '2025-10-02', location: 'Downtown Plaza', status: 'Confirmed', donor: 'viraj@gmail.com' },
     ],
     donationHistory: [
-        { date: '2025-07-15', location: 'Central Hospital', units: 1, donor: 'atharv@email.com' },
-        { date: '2025-08-02', location: 'Greenwood Park', units: 1, donor: 'shreyash.s@example.com' },
-        { date: '2025-06-20', location: 'Central Hospital', units: 1, donor: 'dharam.p@example.com' },
-        { date: '2025-09-01', location: 'Downtown Plaza', units: 1, donor: 'om.s@example.com' },
+        { date: '2025-07-15', location: 'Central Hospital', units: 1, donor: 'viraj@gmail.com' },
+        { date: '2025-08-02', location: 'Greenwood Park', units: 1, donor: 'pranav@gmail.com' },
+        { date: '2025-06-20', location: 'Central Hospital', units: 1, donor: 'mayur@gmail.com' },
+        { date: '2025-09-01', location: 'Downtown Plaza', units: 1, donor: 'sandesh@gmail.com' },
     ],
     trends: [
         { month: 'Mar', donations: 80, usage: 40 }, { month: 'Apr', donations: 81, usage: 19 },
@@ -114,31 +143,31 @@ const mockData = {
     ],
     destinationFlows: [
         // Central General Hospital
-        { id: 1, destinationId: 1, type: 'request', patient: 'Shubham Hole', group: 'A-', units: 2, date: '2025-09-25', status: 'pending', notes: 'Emergency surgery dispatch' },
-        { id: 2, destinationId: 1, type: 'request', patient: 'Yshodeep Khatate', group: 'O+', units: 4, date: '2025-09-24', status: 'approved', approvalDate: '2025-09-24', notes: 'Orthopedic replacement' },
-        { id: 3, destinationId: 1, type: 'donation', donor: 'Atharv Gaikwad', group: 'A+', units: 3, date: '2025-07-15', status: 'completed', notes: 'Hospital voluntary drive' },
-        { id: 4, destinationId: 1, type: 'donation', donor: 'Om Shinde', group: 'AB+', units: 4, date: '2025-09-01', status: 'completed', notes: 'Blood camp donation run' },
-        { id: 5, destinationId: 1, type: 'request', patient: 'Karan Joshi', group: 'B+', units: 3, date: '2025-09-18', status: 'approved', approvalDate: '2025-09-19', notes: 'Cardiac unit' },
-        { id: 6, destinationId: 1, type: 'request', patient: 'Pooja Nair', group: 'O-', units: 2, date: '2025-09-10', status: 'rejected', notes: 'Cross-match mismatch' },
+        { id: 1, destinationId: 1, type: 'request', patient: 'Shubham Budhe', group: 'A-', units: 2, date: '2025-09-25', status: 'pending', notes: 'Emergency surgery dispatch' },
+        { id: 2, destinationId: 1, type: 'request', patient: 'Adesh Jadhav', group: 'O+', units: 4, date: '2025-09-24', status: 'approved', approvalDate: '2025-09-24', notes: 'Orthopedic replacement' },
+        { id: 3, destinationId: 1, type: 'donation', donor: 'Viraj Dhumal', group: 'A+', units: 3, date: '2025-07-15', status: 'completed', notes: 'Hospital voluntary drive' },
+        { id: 4, destinationId: 1, type: 'donation', donor: 'Sandesh Bhosale', group: 'AB+', units: 4, date: '2025-09-01', status: 'completed', notes: 'Blood camp donation run' },
+        { id: 5, destinationId: 1, type: 'request', patient: 'nishant jagatap', group: 'B+', units: 3, date: '2025-09-18', status: 'approved', approvalDate: '2025-09-19', notes: 'Cardiac unit' },
+        { id: 6, destinationId: 1, type: 'request', patient: 'prathamesh netake', group: 'O-', units: 2, date: '2025-09-10', status: 'rejected', notes: 'Cross-match mismatch' },
 
         // Metro Trauma Center
-        { id: 7, destinationId: 2, type: 'request', patient: 'Mangesh Darekar', group: 'B-', units: 1, date: '2025-09-22', status: 'rejected', notes: 'Dispatched from alternate branch' },
-        { id: 8, destinationId: 2, type: 'request', patient: 'Amit Kulkarni', group: 'O-', units: 5, date: '2025-09-20', status: 'approved', approvalDate: '2025-09-20', notes: 'Trauma accident ICU' },
-        { id: 9, destinationId: 2, type: 'donation', donor: 'Shreyash Shendage', group: 'O-', units: 2, date: '2025-08-02', status: 'completed', notes: 'Direct trauma replenishment' },
-        { id: 10, destinationId: 2, type: 'donation', donor: 'Dharam Pote', group: 'B+', units: 2, date: '2025-06-20', status: 'completed', notes: 'Emergency staff drive' },
-        { id: 11, destinationId: 2, type: 'request', patient: 'Neha Sharma', group: 'A+', units: 4, date: '2025-09-15', status: 'approved', approvalDate: '2025-09-16', notes: 'Neuro-surgery dispatch' },
+        { id: 7, destinationId: 2, type: 'request', patient: 'Siddesh Shirake', group: 'B-', units: 1, date: '2025-09-22', status: 'rejected', notes: 'Dispatched from alternate branch' },
+        { id: 8, destinationId: 2, type: 'request', patient: 'rushikesh shelake', group: 'O-', units: 5, date: '2025-09-20', status: 'approved', approvalDate: '2025-09-20', notes: 'Trauma accident ICU' },
+        { id: 9, destinationId: 2, type: 'donation', donor: 'Pranav Bhagat', group: 'O-', units: 2, date: '2025-08-02', status: 'completed', notes: 'Direct trauma replenishment' },
+        { id: 10, destinationId: 2, type: 'donation', donor: 'Mayur Shinde', group: 'B+', units: 2, date: '2025-06-20', status: 'completed', notes: 'Emergency staff drive' },
+        { id: 11, destinationId: 2, type: 'request', patient: 'kedar zagade', group: 'A+', units: 4, date: '2025-09-15', status: 'approved', approvalDate: '2025-09-16', notes: 'Neuro-surgery dispatch' },
 
         // Sunrise Children & Maternity Clinic
-        { id: 12, destinationId: 3, type: 'request', patient: 'Sneha Tambe', group: 'AB-', units: 2, date: '2025-09-27', status: 'pending', notes: 'Pediatric transfusion' },
-        { id: 13, destinationId: 3, type: 'request', patient: 'Aarav Patel', group: 'A+', units: 2, date: '2025-09-12', status: 'approved', approvalDate: '2025-09-12', notes: 'Postnatal ICU' },
-        { id: 14, destinationId: 3, type: 'donation', donor: 'Vikas Mane', group: 'O+', units: 5, date: '2025-08-15', status: 'completed', notes: 'Community mothers drive' },
-        { id: 15, destinationId: 3, type: 'request', patient: 'Geeta Shinde', group: 'B+', units: 1, date: '2025-09-05', status: 'rejected', notes: 'Transferred to general ward' },
+        { id: 12, destinationId: 3, type: 'request', patient: 'om kolate', group: 'AB-', units: 2, date: '2025-09-27', status: 'pending', notes: 'Pediatric transfusion' },
+        { id: 13, destinationId: 3, type: 'request', patient: 'yash jagatap', group: 'A+', units: 2, date: '2025-09-12', status: 'approved', approvalDate: '2025-09-12', notes: 'Postnatal ICU' },
+        { id: 14, destinationId: 3, type: 'donation', donor: 'Viraj Dhumal', group: 'O+', units: 5, date: '2025-08-15', status: 'completed', notes: 'Community mothers drive' },
+        { id: 15, destinationId: 3, type: 'request', patient: 'Pranav Bhagat', group: 'B+', units: 1, date: '2025-09-05', status: 'rejected', notes: 'Transferred to general ward' },
 
         // St. Jude Emergency Hospital
-        { id: 16, destinationId: 4, type: 'request', patient: 'Rohan Gupta', group: 'O+', units: 3, date: '2025-09-26', status: 'approved', approvalDate: '2025-09-26', notes: 'Emergency surgical ward' },
-        { id: 17, destinationId: 4, type: 'request', patient: 'Vandana Salve', group: 'A-', units: 2, date: '2025-09-19', status: 'pending', notes: 'Kidney transplant backup' },
-        { id: 18, destinationId: 4, type: 'donation', donor: 'Deepak More', group: 'AB-', units: 2, date: '2025-07-28', status: 'completed', notes: 'Voluntary blood run' },
-        { id: 19, destinationId: 4, type: 'donation', donor: 'Suresh Patil', group: 'B-', units: 3, date: '2025-08-14', status: 'completed', notes: 'Annual donation camp' }
+        { id: 16, destinationId: 4, type: 'request', patient: 'Mayur Shinde', group: 'O+', units: 3, date: '2025-09-26', status: 'approved', approvalDate: '2025-09-26', notes: 'Emergency surgical ward' },
+        { id: 17, destinationId: 4, type: 'request', patient: 'Sandesh Bhosale', group: 'A-', units: 2, date: '2025-09-19', status: 'pending', notes: 'Kidney transplant backup' },
+        { id: 18, destinationId: 4, type: 'donation', donor: 'Shubham Budhe', group: 'AB-', units: 2, date: '2025-07-28', status: 'completed', notes: 'Voluntary blood run' },
+        { id: 19, destinationId: 4, type: 'donation', donor: 'Adesh Jadhav', group: 'B-', units: 3, date: '2025-08-14', status: 'completed', notes: 'Annual donation camp' }
     ]
 };
 
@@ -147,6 +176,7 @@ const mockData = {
 // (Admin, Worker, Patient, Donor) are reflected everywhere.
 
 function initializeData() {
+    localStorage.clear(); // Force update
     // Seed localStorage from mockData if not already present.
     const keys = ['inventory', 'donors', 'patients', 'requests', 'campaigns',
         'appointments', 'donationHistory', 'trends'];
@@ -261,10 +291,10 @@ function initializeUsers() {
     let users = JSON.parse(localStorage.getItem('users')) || [];
     if (users.length === 0) {
         users = [
-            { email: 'admin@lifecare.com', password: 'password', role: 'admin', name: 'Admin', bloodBankName: 'Life Care Central' },
-            { email: 'worker@lifecare.com', password: 'password', role: 'worker', name: 'Ramesh Patil', designation: 'Blood Bank Officer', phone: '998-877-6655' },
-            { email: 'atharv@email.com', password: 'password', role: 'donor', name: 'Atharv Gaikwad', bloodGroup: 'A+', phone: '123-456-7890' },
-            { email: 'shubham@email.com', password: 'password', role: 'patient', name: 'Shubham Hole', bloodGroup: 'A-', phone: '876-543-2109' },
+            { email: 'admin@lifecare.com', password: 'password', role: 'admin', name: 'tushar shitole', bloodBankName: 'Life Care Central' },
+            { email: 'worker@lifecare.com', password: 'password', role: 'worker', name: 'radha patil', designation: 'Blood Bank Officer', phone: '998-877-6655' },
+            { email: 'viraj@gmail.com', password: 'password', role: 'donor', name: 'Viraj Dhumal', bloodGroup: 'A+', phone: '123-456-7890' },
+            { email: 'shubham@gmail.com', password: 'password', role: 'patient', name: 'Shubham Budhe', bloodGroup: 'A-', phone: '876-543-2109' },
             { email: 'user@lifecare.com', password: 'password', role: 'user', name: 'Demo User', bloodGroup: 'O+', phone: '555-000-1234' },
         ];
     }
@@ -275,7 +305,7 @@ function initializeUsers() {
             email: 'worker@lifecare.com',
             password: 'password',
             role: 'worker',
-            name: 'Ramesh Patil',
+            name: 'radha patil',
             designation: 'Blood Bank Officer',
             phone: '998-877-6655'
         });
